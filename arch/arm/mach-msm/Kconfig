@@ -715,7 +715,7 @@ config MSM_IDLE_STATS_FIRST_BUCKET
 	int "First bucket time"
 	default 62500
 	help
-	  Upper time limit in nanosconds of first bucket.
+	  Upper time limit in nanoseconds of first bucket.
 
 config MSM_IDLE_STATS_BUCKET_SHIFT
 	int "Bucket shift"
@@ -778,7 +778,7 @@ config MSM_SMD
 	  processor.
 
 config MSM_N_WAY_SMD
-	depends on (MSM_SMD && (ARCH_QSD8X50 || ARCH_MSM7X30 || ARCH_MSM7227))
+	depends on (MSM_SMD && (ARCH_QSD8X50 || ARCH_MSM7X30 || ARCH_MSM7227 || ARCH_MSM8X60))
 	default y
 	bool "MSM N-WAY SMD support"
 	help
@@ -801,7 +801,7 @@ config MSM_ONCRPCROUTER_DEBUG
 	  Support for debugging the ONCRPC router for communication
 	  between the ARM9 and ARM11
 
-if QCT_LTE
+if QCT_LTE || ARCH_MSM8X60
 choice
 	prompt "MSM Shared memory interface version"
 	depends on MSM_SMD
@@ -840,7 +840,7 @@ config MSM_SMD_DEBUG
 	  between the ARM9 and ARM11
 
 config MSM_SDIO_AL
-	depends on ARCH_MSM7X30
+	depends on ((ARCH_MSM7X30 || ARCH_MSM8X60) && HAS_WAKELOCK)
 	default n
 	tristate "SDIO-Abstraction-Layer"
 	help
@@ -855,7 +855,7 @@ config MSM_SDIO_AL_TEST
 	  SDIO-AL functionality and performance test.
 
 config MSM_N_WAY_SMSM
-	depends on (MSM_SMD && (ARCH_MSM_SCORPION || ARCH_MSM_SCORPIONMP || ARCH_MSM7X27))
+	depends on (MSM_SMD && (ARCH_MSM_SCORPION || ARCH_MSM_SCORPIONMP || ARCH_MSM7X27 || ARCH_MSM7X25))
 	default y
 	bool "MSM N-WAY SMSM support"
 	help
@@ -905,7 +905,7 @@ config MSM_SDIO_CTL_DEBUG
 
 config MSM_SDIO_DIAG
 	bool "SDIO DIAG Driver"
-	depends on MSM_SDIO_AL
+	depends on (MSM_SDIO_AL && MACH_MECHA)
 	default y
 	help
 	  Provides a DIAG port interface over SDIO.
@@ -976,7 +976,7 @@ config MSM_RMT_STORAGE_CLIENT_STATS
 
 config MSM_DALRPC
 	bool "DAL RPC support"
-	depends on (ARCH_QSD8X50 || ARCH_MSM7X30)
+	depends on ARCH_MSM_SCORPION
 	default y
 	help
 	  Supports RPC calls to DAL devices on remote processor cores.
@@ -987,6 +987,27 @@ config MSM_DALRPC_TEST
 	default m
 	help
 	  Exercises DAL RPC calls to QDSP6.
+
+if CPU_FREQ_MSM
+
+config MSM_CPU_FREQ_SET_MIN_MAX
+	bool "Set Min/Max CPU frequencies."
+	default n
+	help
+	  Allow setting min and max CPU frequencies. Sysfs can be used
+	  to override these values.
+
+config MSM_CPU_FREQ_MAX
+	int "Max CPU Frequency"
+	depends on MSM_CPU_FREQ_SET_MIN_MAX
+	default 384000
+
+config MSM_CPU_FREQ_MIN
+	int "Min CPU Frequency"
+	depends on MSM_CPU_FREQ_SET_MIN_MAX
+	default 245760
+
+endif # CPU_FREQ_MSM
 
 config MSM_CPU_FREQ_SCREEN
 	bool
@@ -1015,6 +1036,11 @@ config MSM_CPU_FREQ_ONDEMAND_MIN
 	int "Min"
 	default 245760
 
+config XTREME_MODE
+	bool "Xtreme mode - Increase max O/C to 1.8GHz"
+	default n
+	depends on CPU_FREQ && !PERFLOCK
+
 config MSM_HW3D
 	tristate "MSM Hardware 3D Register Driver"
 	depends on EARLYSUSPEND
@@ -1030,7 +1056,7 @@ config MSM_HW3D_EARLYSUSPEND_ENABLED
         help
           Provide selection to support earlysuspend in HW3D or not.
 
-if !ARCH_QSD8X50
+if !ARCH_QSD8X50 && !ARCH_MSM8X60
 config MSM_ADSP
 	depends on MSM_AMSS_VERSION_6210 || MSM_AMSS_VERSION_6220 || MSM_AMSS_VERSION_6225 || \
 		   MSM_AMSS_VERSION_6350
